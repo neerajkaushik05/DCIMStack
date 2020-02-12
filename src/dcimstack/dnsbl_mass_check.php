@@ -15,14 +15,18 @@ if ($result->num_rows > 0) {
     }
 }
 
-if ($lock == 'Yes') {
-	echo"I am running and the system is locked.";
-	exit;
+
+$running = exec("ps aux|grep /var/www/DCIMStack/dnsbl_mass_check.php|grep -v grep|wc -l");
+if($running > 1) {
+echo "I am running\n";
+   exit;
 }
 
+#check for time/date if script isnt running check time then kill if failed.
 
+#start script
 $today = date("Y-m-d"); 
-$old = date("Y-m-d", strtotime($today." -7 Days"));
+$old = date("Y-m-d", strtotime($today." -1 Days"));
 $sql = "SELECT * FROM bipm WHERE last_date_check < '$old' ORDER BY last_date_check ASC LIMIT 1";
 
 $result = $conn->query($sql);
@@ -38,8 +42,9 @@ if ($result->num_rows > 0) {
     echo "0 results";
     exit();
 }
+
 function mattermost($ip_range) {
-$ch = curl_init('https://mattermost.crowncloud.net/hooks/8yrpwornrjgc7pu9j6r137cf5o');
+$ch = curl_init('https://mattermost.crowncloud.net/hooks/5i57r84jxpfet8qtd1a75hzmzh');
 $payload = [
 	'username' => "BIPMBOT",
 	'text' => "Starting Check on $ip_range",
